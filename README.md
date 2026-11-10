@@ -15,6 +15,7 @@ Raycast ─► Agents list ──► Enter: focus the pane, bring its terminal f
 | Command | What it does |
 | --- | --- |
 | **Agents** | Every agent in every tuios session, grouped by state: needs you, errored, working, done, idle. The right side shows the pane's last 60 lines and refreshes every 3 seconds. Switch the dropdown to **All Panes** to include shells. |
+| **Jump to Pane** | Every pane in every session, agent or not: shells, editors, dev servers. Search by pane name, title, running program, folder or session. Grouped by session and tab. Type a word after the command in Raycast's main search (`Jump to Pane  api`) and, if only one pane matches, it jumps at once. |
 | **Jump to Agent Needing Me** | Goes straight to the agent that has waited longest. Give it a hotkey. |
 | **Start Agent** | Pick a project, an agent (`claude`, `codex`, anything) and a session. Optionally give it its own git worktree and a first prompt. The new pane opens focused and its terminal comes forward. |
 
@@ -105,7 +106,7 @@ npm run build   # type-check and bundle
 npm run lint
 ```
 
-Code map: `src/tuios.ts` wraps the tuios CLI, `src/terminal.ts` finds and opens terminals, `src/git.ts` makes worktrees, and each command is `src/<command>.tsx`.
+Code map: `src/tuios.ts` wraps the tuios CLI, `src/terminal.ts` finds and opens terminals, `src/actions.ts` holds the shared jump and move actions, `src/git.ts` makes worktrees, and each command is `src/<command>.tsx`.
 
 ## License
 

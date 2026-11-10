@@ -1,7 +1,7 @@
 import { getPreferenceValues } from "@raycast/api";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { Agent, attachedClientPid, ENV, focus, tuiosBin } from "./tuios";
+import { attachedClientPid, ENV, focus, PaneRef, tuiosBin } from "./tuios";
 
 const run = promisify(execFile);
 
@@ -70,7 +70,7 @@ export async function showSession(session: string): Promise<string> {
 }
 
 /** Focus the pane, then bring its session's terminal to the front. Returns the app name. */
-export async function jumpTo(a: Pick<Agent, "session" | "window_id">): Promise<string> {
+export async function jumpTo(a: PaneRef): Promise<string> {
   await focus(a);
   return showSession(a.session);
 }

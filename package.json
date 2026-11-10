@@ -18,6 +18,21 @@
       "mode": "view"
     },
     {
+      "name": "panes",
+      "title": "Jump to Pane",
+      "subtitle": "tuios",
+      "description": "Search every tuios pane, agent or not, by name, title, program or folder, and jump to it.",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "query",
+          "placeholder": "pane",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
       "name": "jump-waiting",
       "title": "Jump to Agent Needing Me",
       "subtitle": "tuios",

@@ -1,19 +1,7 @@
-import {
-  Action,
-  ActionPanel,
-  Color,
-  Form,
-  Icon,
-  Keyboard,
-  List,
-  closeMainWindow,
-  showToast,
-  Toast,
-  useNavigation,
-} from "@raycast/api";
+import { Action, ActionPanel, Color, Form, Icon, Keyboard, List, showToast, Toast, useNavigation } from "@raycast/api";
 import { useCachedPromise, usePromise } from "@raycast/utils";
 import { useEffect, useState } from "react";
-import { jumpTo } from "./terminal";
+import { fail, jump, move } from "./actions";
 import {
   Agent,
   AgentState,
@@ -22,7 +10,6 @@ import {
   leaveNote,
   listAgents,
   listSessions,
-  movePane,
   peekPrompt,
   Prompt,
   queueTask,
@@ -58,34 +45,6 @@ function ago(ns: number): string {
 
 function fence(text: string) {
   return "```\n" + text.replace(/```/g, "ˋˋˋ").trimEnd() + "\n```";
-}
-
-async function fail(title: string, e: unknown) {
-  await showToast({ style: Toast.Style.Failure, title, message: e instanceof Error ? e.message : String(e) });
-}
-
-export async function jump(a: Agent) {
-  try {
-    await jumpTo(a);
-    await closeMainWindow({ clearRootSearch: true });
-  } catch (e) {
-    await fail("Could not jump", e);
-  }
-}
-
-async function move(a: Agent, to: string, refresh: () => void) {
-  const toast = await showToast({ style: Toast.Style.Animated, title: `Moving to ${to}…` });
-  try {
-    await movePane(a, to);
-    toast.style = Toast.Style.Success;
-    toast.title = `Moved ${cleanName(a.name)} → ${to}`;
-    toast.primaryAction = { title: "Jump to It", onAction: () => jump({ ...a, session: to }) };
-    refresh();
-  } catch (e) {
-    toast.style = Toast.Style.Failure;
-    toast.title = "Could not move the pane";
-    toast.message = e instanceof Error ? e.message : String(e);
-  }
 }
 
 export default function Command() {

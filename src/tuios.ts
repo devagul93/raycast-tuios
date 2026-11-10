@@ -58,6 +58,20 @@ export interface Agent {
   agent_state_at: number;
 }
 
+/** Enough to address one pane. */
+export type PaneRef = { session: string; window_id: string };
+
+/** Any pane, agent or not, as list-windows reports it. */
+export interface Pane extends PaneRef {
+  workspace: number;
+  name: string;
+  title: string;
+  command: string;
+  cwd: string;
+  focused: boolean;
+  agent_state?: AgentState;
+}
+
 export interface Session {
   name: string;
   attached: boolean;
@@ -135,15 +149,26 @@ export async function listAgents(all = false): Promise<Agent[]> {
   return r.agents ?? [];
 }
 
+/** Every pane in every session: shells, editors, servers and agents. */
+export async function listPanes(): Promise<Pane[]> {
+  return (await json<{ panes: Pane[] }>(["list-windows", "--all"])).panes ?? [];
+}
+
+/** Workspace number → name, for the workspaces that have one. */
+export async function workspaceNames(session: string): Promise<Record<number, string>> {
+  const r = await json<{ workspaces: { workspace: number; name: string }[] }>(["list-workspaces", "-s", session]);
+  return Object.fromEntries((r.workspaces ?? []).filter((w) => w.name).map((w) => [w.workspace, w.name]));
+}
+
 export async function listSessions(): Promise<Session[]> {
   return (await json<Session[]>(["ls"])) ?? [];
 }
 
-export async function capture(a: Agent, lines = 60): Promise<string> {
+export async function capture(a: PaneRef, lines = 60): Promise<string> {
   return tuios(["capture-pane", "-s", a.session, "-w", a.window_id, "--lines", String(lines)]);
 }
 
-export async function focus(a: Pick<Agent, "session" | "window_id">): Promise<void> {
+export async function focus(a: PaneRef): Promise<void> {
   await tuios(["focus-window", "-s", a.session, a.window_id]);
 }
 
@@ -169,7 +194,7 @@ export async function queueTask(a: Agent, text: string): Promise<void> {
 }
 
 /** Move a pane to another session. Its program keeps running; it lands on the tab that session shows. */
-export async function movePane(a: Agent, toSession: string): Promise<void> {
+export async function movePane(a: PaneRef, toSession: string): Promise<void> {
   await tuios(["move-window", "-s", a.session, "-w", a.window_id, "--to-session", toSession]);
 }
 
