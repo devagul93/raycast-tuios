@@ -21,3 +21,17 @@ export async function makeWorktree(dir: string, branch: string): Promise<string>
   await (exists ? git("worktree", "add", path, branch) : git("worktree", "add", "-b", branch, path));
   return path;
 }
+
+/** Local branches of the repo `dir` is in, most recently committed first. Empty when it is not a repo. */
+export async function listBranches(dir: string): Promise<string[]> {
+  try {
+    const { stdout } = await run(
+      "git",
+      ["-C", dir, "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)", "refs/heads"],
+      { env: ENV },
+    );
+    return stdout.split("\n").filter(Boolean);
+  } catch {
+    return [];
+  }
+}

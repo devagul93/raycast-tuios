@@ -43,7 +43,7 @@
       "name": "start-agent",
       "title": "Start Agent",
       "subtitle": "tuios",
-      "description": "Pick a project and press Enter: starts your default agent in your default session. ⌘Enter for options.",
+      "description": "Project → where (session and tab) → first prompt. Enter moves on, ⌘Enter starts at once with defaults.",
       "mode": "view",
       "arguments": [
         {
@@ -85,6 +85,14 @@
       "description": "The agent command Start Agent uses, as you would type it.",
       "type": "textfield",
       "default": "claude",
+      "required": false
+    },
+    {
+      "name": "agentChoices",
+      "title": "Other Agents",
+      "description": "Comma-separated agent commands offered in the prompt step.",
+      "type": "textfield",
+      "default": "codex, gemini",
       "required": false
     },
     {

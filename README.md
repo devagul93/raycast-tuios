@@ -17,7 +17,7 @@ Raycast ─► Agents list ──► Enter: focus the pane, bring its terminal f
 | **Agents** | Every agent in every tuios session, grouped by state: needs you, errored, working, done, idle. The right side shows the pane's last 60 lines and refreshes every 3 seconds. Switch the dropdown to **All Panes** to include shells. |
 | **Jump to Pane** | Every pane in every session, agent or not: shells, editors, dev servers. Search by pane name, title, running program, folder or session. Grouped by session and tab. Type a word after the command in Raycast's main search (`Jump to Pane  api`) and, if only one pane matches, it jumps at once. |
 | **Jump to Agent Needing Me** | Goes straight to the agent that has waited longest. Give it a hotkey. |
-| **Start Agent** | Pick a project and press Enter: your default agent starts there, in your default session, focused, with its terminal in front. `⌘Enter` opens a form, pre-filled with the defaults, to change the agent, session, worktree, pane name or first prompt. `⌘S` starts it in another session. From Raycast's main search, `Start Agent  api  fix the tests` starts at once when one project matches. |
+| **Start Agent** | Three quick pickers, each opening on the likely choice: **project** → **where** (session and tab) → **first prompt** (and which agent). Enter moves on, `⌘Enter` starts at once with the defaults for the steps left. See [Start Agent](#start-agent). |
 
 ### Agents shortcuts
 
@@ -46,6 +46,26 @@ npm install
 npm run dev     # loads it into Raycast; stop with Ctrl+C, it stays installed
 ```
 
+## Start Agent
+
+```
+① Project          ② Where                         ③ Prompt
+duomanga      ⏎ →  land — Ghostty               ⏎ →  [type the task…]   [claude ▾]
+indistract         ▸ Tab 1  coordinator, b-481       ▸ Start without a prompt
+~/typed/path         Tab 3  …                        Recent prompts…
+                     + New tab
+                   port — WezTerm …                  ⌘B  start in a new worktree
+                   + New session "…" (type a name)
+
+⌘Enter at any step: start now, defaults for the rest
+```
+
+- **Project** lists folders your agents use now, then git repos in your project folders. Type a path (`~/code/app`) to use any folder.
+- **Where** opens on your default session, on the tab it is showing. Each tab lists its panes so you can tell them apart. **New tab** takes the lowest free tab number. Type a name to make a new session.
+- **Prompt**: the search bar is the prompt box. Enter with it empty starts without a prompt. Your last 12 prompts are listed for reuse (`⌘E` to edit one first). The dropdown picks the agent and remembers your choice.
+- **Worktree** (`⌘B` in the prompt step): type a new branch name or pick an existing branch. The checkout is made next to the repo as `<repo>-<branch>` and reused if it exists.
+- From Raycast's main search, `Start Agent  api` jumps straight to step ②, and `Start Agent  api  fix the tests` starts at once.
+
 ## Settings
 
 Open Raycast → Extensions → tuios.
@@ -53,6 +73,7 @@ Open Raycast → Extensions → tuios.
 | Setting | Default | Notes |
 | --- | --- | --- |
 | Default Agent | `claude` | What Start Agent runs. Any command, with arguments. |
+| Other Agents | `codex, gemini` | Also offered in the prompt step's agent dropdown. |
 | Default Session | empty | Where Start Agent opens agents. Empty: the session you started in last time, else the most recently used session open in a terminal. |
 | Project Folders | `~/Developer, ~/Projects, ~/code, ~/src` | Start Agent lists the git repos directly inside these, plus every folder an agent runs in now. Folders that don't exist are skipped. |
 | Terminal for Detached Sessions | Terminal | Opened with `tuios attach <session>` when you jump to a session no terminal is showing. |
@@ -78,10 +99,6 @@ Everything else works without this setting.
 tuios knows which process is showing each session. The extension walks up from that process to the terminal app that owns it, then brings that app forward. One session can be in Ghostty and another in WezTerm, and you can swap them at any time.
 
 If no terminal is showing the session, it opens the one in your settings and attaches.
-
-## Worktrees
-
-In Start Agent's options form (`⌘Enter`), with **Own git worktree** ticked, it makes a checkout next to the repo, named `<repo>-<branch>` (`api` + `feat/retry` → `../api-feat-retry`). The branch is created if it doesn't exist. If the folder already exists it is reused. The agent starts in it, in the session you picked. Remove it later with `git worktree remove`.
 
 ## Troubleshooting
 

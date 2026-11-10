@@ -154,10 +154,22 @@ export async function listPanes(): Promise<Pane[]> {
   return (await json<{ panes: Pane[] }>(["list-windows", "--all"])).panes ?? [];
 }
 
+export interface Workspace {
+  workspace: number;
+  name: string;
+  current: boolean;
+  window_count: number;
+}
+
+/** The workspaces (tabs) of a session that hold panes. */
+export async function listWorkspaces(session: string): Promise<Workspace[]> {
+  return (await json<{ workspaces: Workspace[] }>(["list-workspaces", "-s", session])).workspaces ?? [];
+}
+
 /** Workspace number → name, for the workspaces that have one. */
 export async function workspaceNames(session: string): Promise<Record<number, string>> {
-  const r = await json<{ workspaces: { workspace: number; name: string }[] }>(["list-workspaces", "-s", session]);
-  return Object.fromEntries((r.workspaces ?? []).filter((w) => w.name).map((w) => [w.workspace, w.name]));
+  const ws = await listWorkspaces(session);
+  return Object.fromEntries(ws.filter((w) => w.name).map((w) => [w.workspace, w.name]));
 }
 
 export async function listSessions(): Promise<Session[]> {
@@ -202,6 +214,7 @@ export interface StartOptions {
   session: string;
   cwd: string;
   agent: string;
+  workspace?: number;
   name?: string;
   prompt?: string;
 }
@@ -213,6 +226,7 @@ export interface StartOptions {
  */
 export function startAgent(o: StartOptions): void {
   const args = ["start-agent", o.agent, "-s", o.session, "--cwd", o.cwd, "--focus"];
+  if (o.workspace) args.push("--workspace", String(o.workspace));
   if (o.name) args.push("--name", o.name);
   if (o.prompt) args.push("--prompt", o.prompt);
   const child = spawn(tuiosBin(), args, { env: ENV, detached: true, stdio: "ignore" });
