@@ -4,7 +4,7 @@
   "title": "Tuios",
   "description": "See every tuios agent, jump to it in Ghostty, WezTerm or any terminal, answer its prompts, message it, start new ones and move panes between sessions.",
   "icon": "icon.png",
-  "author": "devansh",
+  "author": "devansh_gulhane",
   "license": "MIT",
   "platforms": [
     "macOS"
