@@ -13,14 +13,43 @@ const STATE: Partial<Record<AgentState, { glyph: string; color: Color; label: st
   idle: { glyph: "○", color: Color.SecondaryText, label: "idle" },
 };
 
-/** Every field a person might remember a pane by. */
-function haystack(p: Pane): string[] {
-  return [p.name, p.title, p.command, p.cwd, basename(p.cwd), p.session].filter(Boolean);
+/** Every field a person might remember a pane by, best first. A hit in an earlier field ranks higher. */
+function fields(p: Pane, tab?: string): string[] {
+  return [
+    cleanName(p.name),
+    cleanName(p.title),
+    basename(p.cwd),
+    p.command,
+    tab ?? "",
+    `tab ${p.workspace}`,
+    p.session,
+    p.cwd,
+  ].map((f) => (f ?? "").toLowerCase());
 }
 
-function matches(p: Pane, q: string): boolean {
-  const needle = q.toLowerCase();
-  return haystack(p).some((h) => h.toLowerCase().includes(needle));
+/**
+ * Every word typed must appear in some field. Returns a rank (higher is better), or -1 for no match.
+ * Whole words beat hits inside a word ("port" barely matches "reports"); earlier fields beat later ones.
+ */
+function score(p: Pane, q: string, tab?: string): number {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return 0;
+  const fs = fields(p, tab);
+  let total = 0;
+  for (const w of words) {
+    let best = -1;
+    fs.forEach((f, i) => {
+      const at = f.indexOf(w);
+      if (at < 0) return;
+      const boundary = at === 0 || /[^\p{L}\p{N}]/u.test(f[at - 1]);
+      const weight = fs.length - i;
+      const exact = f === w ? 8 : 0;
+      best = Math.max(best, boundary ? weight * 10 + (at === 0 ? 5 : 3) + exact : weight * 2);
+    });
+    if (best < 0) return -1;
+    total += best;
+  }
+  return total;
 }
 
 async function load() {
@@ -47,19 +76,34 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Panes 
   useEffect(() => {
     if (!query || !data || isLoading || tried.current) return;
     tried.current = true;
-    const hits = data.panes.filter((p) => matches(p, query));
+    const hits = data.panes.filter((p) => score(p, query, data.names[p.session]?.[p.workspace]) >= 0);
     if (hits.length === 1) jump(hits[0]);
   }, [data, isLoading]);
 
   const panes = data?.panes ?? [];
-  const groups = new Map<string, Pane[]>();
-  for (const s of data?.order ?? []) {
-    for (const p of panes.filter((x) => x.session === s).sort((a, b) => a.workspace - b.workspace)) {
-      const key = `${p.session}\u0000${p.workspace}`;
-      groups.set(key, [...(groups.get(key) ?? []), p]);
-    }
-  }
   const sessions = data?.order ?? [];
+  const tabOf = (p: Pane) => data?.names[p.session]?.[p.workspace];
+
+  // No search: group by session and tab. Searching: one list, best match first, so Enter takes the top hit.
+  const groups: [string, Pane[]][] = [];
+  if (search.trim()) {
+    const ranked = panes
+      .map((p) => ({ p, s: score(p, search, tabOf(p)) }))
+      .filter((x) => x.s >= 0)
+      .sort((a, b) => b.s - a.s || sessions.indexOf(a.p.session) - sessions.indexOf(b.p.session));
+    if (ranked.length)
+      groups.push([`${ranked.length} match${ranked.length === 1 ? "" : "es"}`, ranked.map((x) => x.p)]);
+  } else {
+    const by = new Map<string, Pane[]>();
+    for (const s of sessions) {
+      for (const p of panes.filter((x) => x.session === s).sort((a, b) => a.workspace - b.workspace)) {
+        const tab = tabOf(p);
+        const key = `${p.session} · ${tab ? tab : `tab ${p.workspace}`}`;
+        by.set(key, [...(by.get(key) ?? []), p]);
+      }
+    }
+    groups.push(...by.entries());
+  }
 
   return (
     <List
@@ -67,6 +111,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Panes 
       isShowingDetail={showDetail}
       searchText={search}
       onSearchTextChange={setSearch}
+      filtering={false}
       searchBarPlaceholder="Find a pane by name, title, program or folder…"
       onSelectionChange={setSelected}
     >
@@ -75,26 +120,23 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Panes 
         title="No panes match"
         description="Try a folder name or the program running in it."
       />
-      {[...groups.entries()].map(([key, list]) => {
-        const [session, ws] = key.split("\u0000");
-        const tab = data?.names[session]?.[Number(ws)];
-        return (
-          <List.Section key={key} title={`${session} · ${tab ? tab : `tab ${ws}`}`}>
-            {list.map((p) => (
-              <PaneItem
-                key={p.window_id}
-                pane={p}
-                tab={tab}
-                live={showDetail && selected === p.window_id}
-                showDetail={showDetail}
-                sessions={sessions}
-                toggleDetail={() => setShowDetail((v) => !v)}
-                refresh={revalidate}
-              />
-            ))}
-          </List.Section>
-        );
-      })}
+      {groups.map(([title, list]) => (
+        <List.Section key={title} title={title}>
+          {list.map((p) => (
+            <PaneItem
+              key={p.window_id}
+              pane={p}
+              tab={tabOf(p)}
+              searching={!!search.trim()}
+              live={showDetail && selected === p.window_id}
+              showDetail={showDetail}
+              sessions={sessions}
+              toggleDetail={() => setShowDetail((v) => !v)}
+              refresh={revalidate}
+            />
+          ))}
+        </List.Section>
+      ))}
     </List>
   );
 }
@@ -102,6 +144,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Panes 
 function PaneItem(props: {
   pane: Pane;
   tab?: string;
+  searching: boolean;
   live: boolean;
   showDetail: boolean;
   sessions: string[];
@@ -120,6 +163,7 @@ function PaneItem(props: {
     : [
         ...(p.focused ? [{ icon: Icon.Eye, tooltip: "Focused in its session" }] : []),
         ...(st ? [{ tag: { value: st.label, color: st.color } }] : []),
+        ...(props.searching ? [{ text: where, tooltip: "Session · tab" }] : []),
         { text: p.command || "", tooltip: "Running" },
         { text: tildify(p.cwd), tooltip: p.cwd },
       ];
@@ -130,7 +174,6 @@ function PaneItem(props: {
       icon={st ? { source: Icon.CircleFilled, tintColor: st.color } : Icon.Terminal}
       title={name}
       subtitle={!showDetail && title && title !== name ? title : undefined}
-      keywords={haystack(p)}
       accessories={accessories}
       detail={
         <List.Item.Detail
