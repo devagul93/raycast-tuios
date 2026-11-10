@@ -6,6 +6,9 @@
   "icon": "icon.png",
   "author": "devansh",
   "license": "MIT",
+  "platforms": [
+    "macOS"
+  ],
   "categories": [
     "Developer Tools"
   ],
