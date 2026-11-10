@@ -17,7 +17,7 @@ Raycast ─► Agents list ──► Enter: focus the pane, bring its terminal f
 | **Agents** | Every agent in every tuios session, grouped by state: needs you, errored, working, done, idle. The right side shows the pane's last 60 lines and refreshes every 3 seconds. Switch the dropdown to **All Panes** to include shells. |
 | **Jump to Pane** | Every pane in every session, agent or not: shells, editors, dev servers. Search by pane name, title, running program, folder or session. Grouped by session and tab. Type a word after the command in Raycast's main search (`Jump to Pane  api`) and, if only one pane matches, it jumps at once. |
 | **Jump to Agent Needing Me** | Goes straight to the agent that has waited longest. Give it a hotkey. |
-| **Start Agent** | Pick a project, an agent (`claude`, `codex`, anything) and a session. Optionally give it its own git worktree and a first prompt. The new pane opens focused and its terminal comes forward. |
+| **Start Agent** | Pick a project and press Enter: your default agent starts there, in your default session, focused, with its terminal in front. `⌘Enter` opens a form, pre-filled with the defaults, to change the agent, session, worktree, pane name or first prompt. `⌘S` starts it in another session. From Raycast's main search, `Start Agent  api  fix the tests` starts at once when one project matches. |
 
 ### Agents shortcuts
 
@@ -53,6 +53,7 @@ Open Raycast → Extensions → tuios.
 | Setting | Default | Notes |
 | --- | --- | --- |
 | Default Agent | `claude` | What Start Agent runs. Any command, with arguments. |
+| Default Session | empty | Where Start Agent opens agents. Empty: the session you started in last time, else the most recently used session open in a terminal. |
 | Project Folders | `~/Developer, ~/Projects, ~/code, ~/src` | Start Agent lists the git repos directly inside these, plus every folder an agent runs in now. Folders that don't exist are skipped. |
 | Terminal for Detached Sessions | Terminal | Opened with `tuios attach <session>` when you jump to a session no terminal is showing. |
 | tuios Path | found automatically | Looked up in `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, `~/go/bin`. |
@@ -80,7 +81,7 @@ If no terminal is showing the session, it opens the one in your settings and att
 
 ## Worktrees
 
-With **Own git worktree** ticked, Start Agent makes a checkout next to the repo, named `<repo>-<branch>` (`api` + `feat/retry` → `../api-feat-retry`). The branch is created if it doesn't exist. If the folder already exists it is reused. The agent starts in it, in the session you picked. Remove it later with `git worktree remove`.
+In Start Agent's options form (`⌘Enter`), with **Own git worktree** ticked, it makes a checkout next to the repo, named `<repo>-<branch>` (`api` + `feat/retry` → `../api-feat-retry`). The branch is created if it doesn't exist. If the folder already exists it is reused. The agent starts in it, in the session you picked. Remove it later with `git worktree remove`.
 
 ## Troubleshooting
 

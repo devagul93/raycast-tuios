@@ -43,8 +43,22 @@
       "name": "start-agent",
       "title": "Start Agent",
       "subtitle": "tuios",
-      "description": "Start Claude, Codex or any agent CLI in a project, in the tuios session you pick.",
-      "mode": "view"
+      "description": "Pick a project and press Enter: starts your default agent in your default session. ⌘Enter for options.",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "project",
+          "placeholder": "project",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "prompt",
+          "placeholder": "first prompt",
+          "type": "text",
+          "required": false
+        }
+      ]
     }
   ],
   "dependencies": {
@@ -72,6 +86,14 @@
       "type": "textfield",
       "default": "claude",
       "required": false
+    },
+    {
+      "name": "defaultSession",
+      "title": "Default Session",
+      "description": "Where Start Agent opens agents. Empty: the session you used last.",
+      "type": "textfield",
+      "required": false,
+      "placeholder": "land"
     },
     {
       "name": "projectRoots",
