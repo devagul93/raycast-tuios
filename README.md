@@ -3,7 +3,7 @@
 See every coding agent running in [tuios](https://tuios.dev), jump to the one you want, and answer it, all from Raycast.
 
 ```
-Raycast ─► Agents list ──► Enter: focus the pane, bring its terminal forward
+Raycast ─► Search Agents ──► Enter: focus the pane, bring its terminal forward
               │              (Ghostty, WezTerm, kitty, Alacritty, iTerm, Terminal)
               ├─ ⌘Y / ⌘N    approve or deny the prompt it is waiting on
               ├─ ⌘M         leave it a note, or queue its next task
@@ -14,12 +14,12 @@ Raycast ─► Agents list ──► Enter: focus the pane, bring its terminal f
 
 | Command | What it does |
 | --- | --- |
-| **Agents** | Every agent in every tuios session, grouped by state: needs you, errored, working, done, idle. The right side shows the pane's last 60 lines and refreshes every 3 seconds. Switch the dropdown to **All Panes** to include shells. |
+| **Search Agents** | Every agent in every tuios session, grouped by state: needs you, errored, working, done, idle. The right side shows the pane's last 60 lines and refreshes every 3 seconds. Switch the dropdown to **All Panes** to include shells. |
 | **Jump to Pane** | Every pane in every session, agent or not: shells, editors, dev servers. Search by pane name, title, running program, folder or session. Grouped by session and tab. Type a word after the command in Raycast's main search (`Jump to Pane  api`) and, if only one pane matches, it jumps at once. |
 | **Jump to Agent Needing Me** | Goes straight to the agent that has waited longest. Give it a hotkey. |
 | **Start Agent** | Three quick pickers, each opening on the likely choice: **project** → **where** (session and tab) → **first prompt** (and which agent). Enter moves on, `⌘Enter` starts at once with the defaults for the steps left. See [Start Agent](#start-agent). |
 
-### Agents shortcuts
+### Search Agents shortcuts
 
 | Key | Action |
 | --- | --- |
@@ -37,7 +37,11 @@ Raycast ─► Agents list ──► Enter: focus the pane, bring its terminal f
 
 ## Install
 
-You need macOS, [Raycast](https://raycast.com), Node 22 or newer, and tuios 0.11 or newer (`brew install tuios`).
+You need macOS, [Raycast](https://raycast.com) and tuios 0.11 or newer (`brew install tuios`).
+
+**From the Raycast Store:** search Store for "tuios" in Raycast, or open [raycast.com/devansh_gulhane/tuios](https://www.raycast.com/devansh_gulhane/tuios).
+
+**From source** (needs Node 22 or newer):
 
 ```sh
 git clone https://github.com/devagul93/raycast-tuios
